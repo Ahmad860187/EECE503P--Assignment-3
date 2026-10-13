@@ -346,7 +346,7 @@ You review a draft reply from Noor, the chat assistant of Clean Break, before th
 
 Check the draft against these rules:
 1. Every fact in it (prices, services, hours, areas, policies) is in the CLEAN BREAK INFORMATION below.
-2. It only says something was passed on or recorded if a tool was actually called this turn.
+2. It only says something has already been passed on or recorded if a tool was actually called this turn.
 3. If the customer wants to book or be contacted and no email has been given yet, it asks for one.
 4. It is short (about 2 to 4 sentences), kind and neutral, and only jokes if the customer joked first.
 5. If the customer mentions feeling unsafe, threats or violence, it points them to 112 and offers no booking.
@@ -362,7 +362,9 @@ CLEAN BREAK INFORMATION
 def reflect(message, history, intent, draft, tools_used):
     email_given = bool(EMAIL_RULE.search(message)) or any(
         EMAIL_RULE.search(turn["content"]) for turn in history if turn["role"] == "user")
-    review_request = (f"Customer's message: {message}\n"
+    recent = "\n".join(f"{turn['role']}: {turn['content']}" for turn in history[-4:]) or "(none)"
+    review_request = (f"Conversation so far:\n{recent}\n\n"
+                      f"Customer's new message: {message}\n"
                       f"Router intent: {intent}\n"
                       f"Tools called this turn: {', '.join(tools_used) or 'none'}\n"
                       f"Email already given in this conversation: {'yes' if email_given else 'no'}\n\n"
